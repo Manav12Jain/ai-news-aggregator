@@ -1,17 +1,24 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def get_database_url() -> str:
+def get_database_url() -> URL:
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "postgres")
     host = os.getenv("POSTGRES_HOST", "localhost")
     port = os.getenv("POSTGRES_PORT", "5432")
     db = os.getenv("POSTGRES_DB", "ai_news_aggregator")
-    return f"postgresql://{user}:{password}@{host}:{port}/{db}"
+    return URL.create(
+        "postgresql",
+        username=user,
+        password=password,
+        host=host,
+        port=int(port),
+        database=db,
+    )
 
 engine = create_engine(get_database_url())
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

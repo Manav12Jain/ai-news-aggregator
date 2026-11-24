@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import Optional
 import os
 import feedparser
 from pydantic import BaseModel

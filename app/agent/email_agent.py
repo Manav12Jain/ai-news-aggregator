@@ -42,17 +42,12 @@ class EmailDigestResponse(BaseModel):
         return markdown
 
 
-class EmailDigest(BaseModel):
-    introduction: EmailIntroduction
-    ranked_articles: List[dict] = Field(description="Top 10 ranked articles with their details")
-
-
 EMAIL_PROMPT = """You are an expert email writer specializing in creating engaging, personalized AI news digests.
 
 Your role is to write a warm, professional introduction for a daily AI news digest email that:
 - Greets the user by name
 - Includes the current date
-- Provides a brief, engaging overview of what's coming in the top 10 ranked articles
+- Provides a brief, engaging overview of the selected articles
 - Highlights the most interesting or important themes
 - Sets expectations for the content ahead
 
@@ -104,15 +99,6 @@ Generate a greeting and introduction that previews these {len(top_articles)} art
                 introduction="Here are the AI news stories ranked by relevance to your interests."
             )
 
-    def create_email_digest(self, ranked_articles: List[dict], limit: int = 10) -> EmailDigest:
-        top_articles = ranked_articles[:limit]
-        introduction = self.generate_introduction(top_articles)
-        
-        return EmailDigest(
-            introduction=introduction,
-            ranked_articles=top_articles
-        )
-    
     def create_email_digest_response(self, ranked_articles: List[RankedArticleDetail], total_ranked: int, limit: int = 10) -> EmailDigestResponse:
         top_articles = ranked_articles[:limit]
         introduction = self.generate_introduction(top_articles)
