@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Preview your AI news digest and search your saved summaries.">
+  <title>AI News Aggregator</title>
+  <link rel="stylesheet" href="/dashboard.css">
+  <script src="/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-shell">
+      <a class="brand" href="#briefing">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>AI News Aggregator</span>
+      </a>
+      <nav aria-label="Dashboard">
+        <a href="#briefing" data-tab="briefing" aria-current="page">Briefing</a>
+        <a href="#library" data-tab="library">Library</a>
+        <a href="#signals" data-tab="signals">Signals</a>
+        <a href="#history" data-tab="history">History</a>
+      </nav>
+      <span class="local-label"><span aria-hidden="true"></span> Local workspace</span>
+    </div>
+  </header>
+  <main class="shell">
+    <section id="briefing-view" aria-labelledby="briefing-title">
+      <div class="hero">
+        <div class="orbits" aria-hidden="true"></div>
+        <div class="hero-content">
+          <h1 id="briefing-title">Your AI briefing<span>.</span></h1>
+          <p>Preview saved stories or collect fresh news and save a digest.</p>
+          <form id="preview-form" class="preview-form">
+            <label>Lookback
+              <select name="days">
+                <option value="1">24 hours</option>
+                <option value="3">3 days</option>
+                <option value="7" selected>7 days</option>
+                <option value="14">14 days</option>
+                <option value="30">30 days</option>
+              </select>
+            </label>
+            <label>Stories
+              <select name="count">
+                <option value="3">3 stories</option>
+                <option value="5" selected>5 stories</option>
+                <option value="10">10 stories</option>
+              </select>
+            </label>
+            <button class="primary" id="preview-button" type="submit">Generate preview</button>
+            <button class="secondary" id="run-button" type="submit">Run pipeline</button>
+            <label class="check-label run-email"><input type="checkbox" name="email"> Email me after the pipeline runs</label>
+          </form>
+        </div>
+      </div>
+      <section id="run-panel" class="run-panel" aria-labelledby="run-title" hidden>
+        <div class="section-head">
+          <h2 id="run-title">Pipeline status</h2>
+          <a class="secondary" id="run-edition" href="#history" hidden>Open digest</a>
+        </div>
+        <progress id="run-progress" max="5" value="0" aria-label="Pipeline stages completed"></progress>
+        <p id="run-status" role="status"></p>
+        <p id="run-stats" class="muted" hidden></p>
+      </section>
+      <p id="preview-status" class="notice" role="status" hidden></p>
+      <section id="preview-panel" class="content-section" aria-labelledby="preview-title" hidden>
+        <div class="section-head">
+          <div>
+            <h2 id="preview-title" tabindex="-1">Digest preview</h2>
+            <p id="preview-count" class="muted"></p>
+          </div>
+          <button class="secondary" id="export-button" type="button">Download Markdown</button>
+        </div>
+        <div class="intro">
+          <strong id="preview-greeting"></strong>
+          <p id="preview-introduction"></p>
+        </div>
+        <div id="preview-stories" class="story-list"></div>
+      </section>
+      <section class="content-section" aria-labelledby="recent-title">
+        <div class="section-head">
+          <div>
+            <h2 id="recent-title">Recent stories</h2>
+            <p id="recent-status" role="status" class="muted">Loading saved stories…</p>
+          </div>
+          <a class="secondary" href="#library">Browse library</a>
+        </div>
+        <div id="recent-stories" class="story-list"></div>
+      </section>
+    </section>
+    <section id="library-view" aria-labelledby="library-title" hidden>
+      <div class="library-heading">
+        <h1 id="library-title" tabindex="-1">Story library<span>.</span></h1>
+        <p>Search article titles and summaries saved in PostgreSQL.</p>
+      </div>
+      <form id="library-form" class="library-form">
+        <label class="search-field">Search
+          <input name="q" type="search" placeholder="Search titles and summaries" maxlength="200">
+        </label>
+        <label>Source
+          <select name="source">
+            <option value="">All sources</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="youtube">YouTube</option>
+          </select>
+        </label>
+        <label>Published
+          <select name="days">
+            <option value="0">Any time</option>
+            <option value="1">24 hours</option>
+            <option value="3">3 days</option>
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30">30 days</option>
+          </select>
+        </label>
+        <button class="primary" type="submit">Search</button>
+        <button class="secondary" type="reset">Clear</button>
+      </form>
+      <p id="library-status" class="muted library-status" role="status">Loading saved stories…</p>
+      <div id="library-stories" class="story-list"></div>
+      <nav id="pagination" class="pagination" aria-label="Story pages" hidden>
+        <button id="previous-page" class="secondary" type="button">Previous</button>
+        <span id="page-label"></span>
+        <button id="next-page" class="secondary" type="button">Next</button>
+      </nav>
+    </section>
+    <section id="signals-view" aria-labelledby="signals-title" hidden>
+      <div class="library-heading">
+        <h1 id="signals-title" tabindex="-1">Signals<span>.</span></h1>
+        <p>Public-source updates on AI research, policy, chips, and developer tools.</p>
+      </div>
+      <form id="signals-form" class="library-form">
+        <label>Topic
+          <select name="topic">
+            <option value="">All topics</option>
+            <option value="research">AI research</option>
+            <option value="policy">AI policy</option>
+            <option value="chips">Chips &amp; supply chains</option>
+            <option value="tech">Developer tools</option>
+          </select>
+        </label>
+        <label>Published
+          <select name="days">
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30" selected>30 days</option>
+            <option value="90">90 days</option>
+          </select>
+        </label>
+        <button class="secondary" id="signals-refresh" type="button">Refresh sources</button>
+        <button class="primary" id="signals-generate" type="submit">Generate briefing</button>
+      </form>
+      <p id="signals-action" class="notice" role="status" hidden></p>
+      <aside class="intro signals-context" aria-labelledby="world-monitor-title">
+        <div>
+          <h2 id="world-monitor-title">World Monitor</h2>
+          <p>Compare these developments with the technology industry’s event calendar.</p>
+        </div>
+        <div class="signals-actions">
+          <button type="button" class="secondary" id="world-monitor-load" hidden>Load tech events</button>
+          <a class="secondary" href="https://tech.worldmonitor.app/dashboard" target="_blank" rel="noopener noreferrer">Open Tech Monitor</a>
+        </div>
+        <p id="world-monitor-status" class="muted" role="status" hidden></p>
+        <div id="world-monitor-events" class="story-list" hidden></div>
+        <details id="world-monitor-notices" hidden>
+          <summary>Source notices</summary>
+          <pre id="world-monitor-attribution"></pre>
+        </details>
+      </aside>
+      <section id="signal-briefing-view" class="content-section" aria-labelledby="signal-briefing-title" hidden>
+        <div class="section-head">
+          <div>
+            <h2 id="signal-briefing-title" tabindex="-1">Signal briefing</h2>
+            <p id="signal-briefing-meta" class="muted"></p>
+          </div>
+          <button class="secondary" type="button" id="signal-briefing-export">Download Markdown</button>
+        </div>
+        <div id="signal-briefing-stories" class="story-list"></div>
+      </section>
+      <section class="content-section" aria-labelledby="signals-stories-title">
+        <div class="section-head">
+          <div>
+            <h2 id="signals-stories-title">Public sources</h2>
+            <p id="signals-status" class="muted" role="status"></p>
+          </div>
+          <label id="signal-briefing-history" hidden>Saved briefings
+            <select id="signal-briefing-select">
+              <option value="">Choose a briefing</option>
+            </select>
+          </label>
+        </div>
+        <p id="signals-source-status" class="muted signals-source-status" hidden></p>
+        <div id="signals-stories" class="story-list"></div>
+        <nav id="signals-pagination" class="pagination" aria-label="Signals pages" hidden>
+          <button id="signals-previous" class="secondary" type="button">Previous</button>
+          <span id="signals-page"></span>
+          <button id="signals-next" class="secondary" type="button">Next</button>
+        </nav>
+      </section>
+    </section>
+    <section id="history-view" aria-labelledby="history-title" hidden>
+      <div class="library-heading">
+        <h1 id="history-title" tabindex="-1">Digest history<span>.</span></h1>
+        <p>Reopen or download your saved previews, pipeline runs, and sent editions.</p>
+      </div>
+      <section id="history-detail" class="content-section" aria-labelledby="history-detail-title" hidden>
+        <div class="section-head">
+          <div>
+            <a href="#history" class="story-link">Back to all editions</a>
+            <h2 id="history-detail-title" tabindex="-1">Saved digest</h2>
+            <p id="history-detail-meta" class="muted"></p>
+          </div>
+          <button class="secondary" id="history-export" type="button">Download Markdown</button>
+        </div>
+        <div class="intro">
+          <strong id="history-greeting"></strong>
+          <p id="history-introduction"></p>
+        </div>
+        <div id="history-stories" class="story-list"></div>
+      </section>
+      <p id="history-status" class="muted library-status" role="status"></p>
+      <div id="history-list" class="story-list"></div>
+      <nav id="history-pagination" class="pagination" aria-label="Digest history pages" hidden>
+        <button id="history-previous" class="secondary" type="button">Previous</button>
+        <span id="history-page"></span>
+        <button id="history-next" class="secondary" type="button">Next</button>
+      </nav>
+    </section>
+  </main>
+</body>
+</html>
